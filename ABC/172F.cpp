@@ -2,54 +2,41 @@
 
 using namespace std;
 typedef long long ll;
-const ll MOD = 1e9+7;
-const int M = 2e6+5;
 
-ll fac[M], ifac[M];
-
-ll inv(ll x) {
-	ll ans = 1;
-	ll p = MOD-2;
-	while(p > 0) {
-		if(p&1) ans = (ans*x) % MOD;
-		p >>= 1;
-		x = (x*x) % MOD;
+ll f(ll a, ll b, ll c) {
+	ll x = a^b^c;
+	if(x == 0) return 0;
+	ll p = 1;
+	while((p<<1) <= x) p <<= 1;
+	ll da, db = p - (b&(p-1));
+	if(a&p) da = 1 + (a&(p-1));
+	else if(p < a) {
+		ll p2 = p<<1;
+		while(!(a&p2)) p2 <<= 1;
+		da = 1 + (a&(p2-1));
+	} else da = -1;
+	if(da == a) da = -1;
+	if(da == -1) {
+		if(db >= a) return -1;
+		ll ans = f(a-db, b+db, c);
+		if(ans < 0) return -1;
+		else return ans + db;
+	} else {
+		if(da > db) swap(da, db);
+		ll ans = f(a-da, b+da, c);
+		if(ans < 0 || ans+da >= db) return -1;
+		else return ans+da;
 	}
-	return ans;
-}
-
-ll ifa(int i) {
-	if(!ifac[i]) ifac[i] = inv(fac[i]);
-	return ifac[i];
-}
-
-ll C(int n, int k) {
-	return (((fac[n]*ifa(k)) % MOD) * ifa(n-k)) % MOD;
 }
 
 int main() {
-	ios::sync_with_stdio(false);
-	cin.tie(nullptr);
-	
-	fac[0] = 1;
-	for(int i = 1; i < M; ++i) fac[i] = (fac[i-1]*i) % MOD;
-
-	int K;
-	cin >> K;
-	string S;
-	cin >> S;
-	int n = S.size();
-	ll ans = 0;
-	ll p25 = 1, p26 = 1, i26 = inv(26);
-	for(int k = 0; k < K; ++k) p26 = (p26*26) % MOD;
-	for(int k = 0; k <= K; ++k) {
-		ll a = (p25 * C(k+n-1, n-1)) % MOD;
-		a = (a * p26) % MOD;
-		ans = (ans + a) % MOD;
-		p25 = (p25*25) % MOD;
-		p26 = (p26*i26) % MOD;
+	int N;
+	ll a, b, c=0, x;
+	cin >> N >> a >> b;
+	for(int i = 0; i < N-2; ++i) {
+		cin >> x;
+		c ^= x;
 	}
-	cout << ans << "\n";
-
+	cout << f(a, b, c) << endl;
 	return 0;
 }
